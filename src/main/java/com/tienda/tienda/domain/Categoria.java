@@ -1,22 +1,18 @@
 package com.tienda.tienda.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "categoria")
 public class Categoria implements Serializable {
 
-    // Se recomienda añadir un serialVersionUID
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -25,7 +21,7 @@ public class Categoria implements Serializable {
     private Integer idCategoria;
 
     @Column(unique = true, nullable = false, length = 50)
-    @NotNull
+    @NotBlank
     @Size(max = 50)
     private String descripcion;
 
@@ -33,6 +29,6 @@ public class Categoria implements Serializable {
     @Size(max = 1024)
     private String rutaImagen;
 
-    @Column(name = "activo")
-    private Boolean activo;
+    @Column(nullable = false)
+    private boolean activo = true;
 }

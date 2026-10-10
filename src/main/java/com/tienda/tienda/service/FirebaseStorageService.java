@@ -8,12 +8,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@RequiredArgsConstructor
 public class FirebaseStorageService {
+
     @Value("${firebase.bucket.name}")
     private String bucketName;
     @Value("${firebase.storage.path}")
@@ -21,25 +24,25 @@ public class FirebaseStorageService {
     // Aquí se manejaría la inyección del cliente de Storage como un bean
     private final Storage storage;
 
-    public FirebaseStorageService(Storage storage) {
-        this.storage = storage;
-    }
-
-    //Sube un archivo de imagen al almacenamiento de Firebase.    
+    //Sube un archivo de imagen al almacenamiento de Firebase.
     public String uploadImage(MultipartFile localFile, String folder, Integer id) throws IOException {
         String originalName = localFile.getOriginalFilename();
         String fileExtension = "";
         if (originalName != null && originalName.contains(".")) {
             fileExtension = originalName.substring(originalName.lastIndexOf("."));
         }
-
         // Se genera el nombre del archivo con un formato consistente.
         String fileName = "img" + getFormattedNumber(id) + fileExtension;
-
         File tempFile = convertToFile(localFile);
-
         try {
             return uploadToFirebase(tempFile, folder, fileName);
+        } catch (IOException e) {
+            // Conserva las excepciones de entrada/salida originales.
+            throw e;
+        } catch (RuntimeException e) {
+            // Convierte errores del SDK de Firebase/Google Cloud
+            // al contrato de excepción utilizado por los servicios.
+            throw new IOException("No fue posible almacenar la imagen en Firebase.", e);
         } finally {
             // Asegura que el archivo temporal se elimine siempre.
             if (tempFile.exists()) {
@@ -49,7 +52,7 @@ public class FirebaseStorageService {
     }
 
     //Convierte un MultipartFile a un archivo temporal en el servidor.
-     private File convertToFile(MultipartFile multipartFile) throws IOException {
+    private File convertToFile(MultipartFile multipartFile) throws IOException {
         File tempFile = File.createTempFile("upload-", ".tmp");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             fos.write(multipartFile.getBytes());
