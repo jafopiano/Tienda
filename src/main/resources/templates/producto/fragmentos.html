@@ -32,7 +32,7 @@
                         <input type="hidden" id="productoRutaImagen" name="rutaImagen"/>
                         <div class="mb-3">
                             <label for="productoCategoria">[[#{producto.categoria}]]</label>
-                            <select id="productoIdCategoria" name="idCategoria" class="form-select" required>
+                            <select id="productoIdCategoria" name="categoria.idCategoria" class="form-select" required>
                                 <option th:each="c : ${categorias}" th:value="${c.idCategoria}">
                                     [[${c.descripcion}]]
                                 </option>
@@ -103,15 +103,16 @@
                             <tbody>
                                 <tr th:each="p : ${productos}">
                                     <td>[[${p.idProducto}]]</td>
-                                    <td>[[${p.descripcion}]]</td>
+                                    <!-- AQUI-->
+                                    <td>[[${p.categoria.descripcion}]]</td>
                                     <td class="text-end">[[${#numbers.formatCurrency(p.precio)}]]</td>
                                     <td class="text-center">[[${p.existencias}]]</td>
                                     <td class="text-end">[[${#numbers.formatCurrency(p.precio*p.existencias)}]]</td>
                                     <td><img th:if="${p.rutaImagen != null}"
                                              th:src="${p.rutaImagen}"
                                              alt="Imagen de producto"
-                                             height="75"/></td>
-                                    <td>[[${p.idCategoria}]]</td>
+                                             height="75"/></td>                              
+                                    <td th:text="${p.categoria != null ? p.categoria.descripcion : ''}"></td>
                                     <td th:text="${p.activo} ? 'Activa':'Inactiva'"></td>
                                     <td sec:authorize="hasRole('ROLE_ADMIN')">
                                         <button type="button" class="btn btn-danger"
@@ -127,7 +128,9 @@
                                                 data-modo="editar"
                                                 th:data-titulo="#{accion.actualizar}"
                                                 th:data-id="${p.idProducto}"
-                                                th:data-categoria-id="${p.idCategoria}"
+                                                
+                                                th:data-categoria-id="${p.categoria != null ? p.categoria.idCategoria : ''}"
+                                                
                                                 th:data-descripcion="${p.descripcion}"
                                                 th:data-detalle="${p.detalle}"
                                                 th:data-precio="${p.precio}"
